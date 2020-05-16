@@ -1,0 +1,91 @@
+{%extends 'shop/basic.html' %}
+{% block title %} Checkout - INFINITY {% endblock %}
+{% block body %}
+<div class="container">
+    <div class="col my-4">
+        <h2>INFINITY Tracker - Enter Your Order ID and Email To Track Your Order</h2>
+        <form method="post" action="#" id="trackerform">{% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="orderid">Order ID</label>
+                    <input type="text" class="form-control" id="orderId" name="orderid" placeholder="Order ID">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </div>
+    </div>
+    <div class="col my-4">
+        <h2>Your Order Status</h2>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+                Enter Your Order ID And Email to Know Your Order Location
+            </ul>
+        </div>
+        <h2>Your Order Details</h2>
+        <div class="my-4">
+            <ul class="list-group" id="citems">
+                Enter Your Order ID And Email to Know Your Order Location
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script>
+$('#trackerform').submit(function(event){
+
+$('#items').empty();
+var formData = {
+'orderId':$('input[name=orderId]').val(),
+'email':$('input[name=email]').val(),
+'csrfmiddlewaretoken':$('input[name=csrfmiddlewaretoken]').val()
+};
+$.ajax({
+type:'POST',
+url: '/shop/tracker/',
+data: formData,
+encode:true
+})
+
+.done(function(data){
+data = JSON.parse(data);
+updates = data[0];
+is(updates.length>0 && updates!={}){
+ for(i=0;i<updates.length;i++){
+    Let text =updates[i]['text'];
+    Let time =updates[i]['time'];
+    mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+    ${text}
+    <span class="badge badge-primary badge-pill">${time}</span>
+  </li>`
+  $(`#items`).append(mystr);
+    }
+
+ }else{
+ mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+    SORRY! We Fail To Fetch Your Order ID and Email Make Sure To Type Correct Order ID OR Email
+  </li>`
+  $(`#items`).append(mystr);
+
+ }
+ cart = JSON.parse(data[1]);
+for(item in cart){
+    Let name =cart[item][1];
+    Let qty =cart[item][0];
+    mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+    ${name}
+    <span class="badge badge-primary badge-pill">${qty}</span>
+  </li>`
+  $(`#citems`).append(mystr);
+    }
+});
+event.preventDefault();
+
+});
+</script>
+{%endblock%}
